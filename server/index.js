@@ -28,14 +28,38 @@ app.get("/applications", async (req, res) => {
 // POST to PostgreSQL
 app.post("/applications", async (req, res) => {
   try {
-    const { company, role, status } = req.body;
+    const {
+  company,
+  role,
+  status,
+  application_date,
+  job_link,
+  notes,
+  follow_up_date,
+} = req.body;
 
     const result = await pool.query(
-      `INSERT INTO applications (company, role, status)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [company, role, status]
-    );
+  `INSERT INTO applications (
+    company,
+    role,
+    status,
+    application_date,
+    job_link,
+    notes,
+    follow_up_date
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  RETURNING *`,
+  [
+    company,
+    role,
+    status,
+    application_date || null,
+    job_link || null,
+    notes || null,
+    follow_up_date || null,
+  ]
+);
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -43,7 +67,66 @@ app.post("/applications", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+// UPDATE application
+app.put("/applications/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    const {
+      company,
+      role,
+      status,
+      application_date,
+      job_link,
+      notes,
+      follow_up_date,
+    } = req.body;
+
+    const result = await pool.query(
+      `UPDATE applications
+       SET company = $1,
+           role = $2,
+           status = $3,
+           application_date = $4,
+           job_link = $5,
+           notes = $6,
+           follow_up_date = $7
+       WHERE id = $8
+       RETURNING *`,
+      [
+        company,
+        role,
+        status,
+        application_date || null,
+        job_link || null,
+        notes || null,
+        follow_up_date || null,
+        id,
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+// DELETE application
+app.delete("/applications/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM applications WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
