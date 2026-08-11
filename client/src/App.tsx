@@ -1,3 +1,4 @@
+import "./App.css";
 import { useEffect, useState } from "react";
 
 type Application = {
@@ -21,13 +22,23 @@ function App() {
   const [notes, setNotes] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3001/applications")
-      .then((response) => response.json())
-      .then((data) => setApplications(data))
-      .catch((error) => console.error("Error:", error));
-  }, []);
+  fetch("http://localhost:3001/applications")
+    .then((response) => response.json())
+    .then((data) => setApplications(data))
+    .catch((error) => {
+
+  console.error("Error:", error);
+
+  setLoadError(true);
+
+})
+    .finally(() => setIsLoading(false));
+}, []);
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this application?");
 if (!confirmed) return;
@@ -60,29 +71,62 @@ const handleCancelEdit = () => {
   setFollowUpDate("");
 };
   const handleSubmit = async (event: React.FormEvent) => {
+
   event.preventDefault();
 
-  const url = editingId
-    ? `http://localhost:3001/applications/${editingId}`
-    : "http://localhost:3001/applications";
+  if (!company.trim() || !role.trim()) {
 
-  const method = editingId ? "PUT" : "POST";
+    alert("Please enter both company and role.");
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
+    return;
+
+  }
+  setIsSaving(true);
+  try {
+
+    const url = editingId
+
+      ? `http://localhost:3001/applications/${editingId}`
+
+      : "http://localhost:3001/applications";
+
+    const method = editingId ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+
+      method,
+
+      headers: {
+
+        "Content-Type": "application/json",
+
+      },
+
       body: JSON.stringify({
-      company,
-      role,
-      status,
-      application_date: applicationDate,
-      job_link: jobLink,
-      notes,
-      follow_up_date: followUpDate,
+
+        company,
+
+        role,
+
+        status,
+
+        application_date: applicationDate,
+
+        job_link: jobLink,
+
+        notes,
+
+        follow_up_date: followUpDate,
+
       }),
-  });
+
+    });
+
+    if (!response.ok) {
+
+      throw new Error("Failed to save application");
+
+    }
 
     const newApplication = await response.json();
 
@@ -104,13 +148,26 @@ const handleCancelEdit = () => {
     setJobLink("");
     setNotes("");
     setFollowUpDate("");
-  };
+  }
+  catch (error) {
+
+  console.error(error);
+
+  alert("Something went wrong while saving the application.");
+
+}
+finally {
+
+  setIsSaving(false);
+
+}
+
+};
 
   return (
-    <div>
-      <h1>Job Application Tracker</h1>
-
-      <form onSubmit={handleSubmit}>
+  <div className="app-container">
+    <h1>Job Application Tracker</h1>
+      <form className="application-form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Company"
@@ -158,8 +215,12 @@ const handleCancelEdit = () => {
       value={followUpDate}
       onChange={(event) => setFollowUpDate(event.target.value)}
       />
-        <button type="submit">
-  {editingId ? "Update Application" : "Add Application"}
+        <button type="submit" disabled={isSaving}>
+  {isSaving
+    ? "Saving..."
+    : editingId
+    ? "Update Application"
+    : "Add Application"}
 </button>
 {editingId && (
   <button type="button" onClick={handleCancelEdit}>
@@ -167,14 +228,26 @@ const handleCancelEdit = () => {
   </button>
 )}
       </form>
+{isLoading && <p>Loading applications...</p>}
+{loadError && (
+  <p>Unable to load applications. Please try again.</p>
+)}
+{!isLoading && !loadError && applications.length === 0 && (
+  <p>No applications yet. Add your first application!</p>
+)}
+      <div className="applications-grid">
 
-      {applications.map((application) => (
-  <div key={application.id}>
-    <h2>{application.company}</h2>
+  {!isLoading && applications.map((application) => (
 
-    <p>{application.role}</p>
+    <div className="application-card" key={application.id}>
+    <h2 className="company-name">{application.company}</h2>
+    <p className="role-name">{application.role}</p>
 
-    <p>Status: {application.status}</p>
+    <p>
+  <span className={`status-badge status-${application.status.toLowerCase()}`}>
+    {application.status}
+  </span>
+</p>
 
     {application.application_date && (
       <p>
@@ -205,19 +278,20 @@ const handleCancelEdit = () => {
         {new Date(application.follow_up_date).toLocaleDateString()}
       </p>
     )}
-    <button
-    type="button"
-    onClick={() => handleEdit(application)}
-    >
+    <button className="edit-button" onClick={() => handleEdit(application)}>
   Edit
 </button>
-<button onClick={() => handleDelete(application.id)}>
+
+<button
+  className="delete-button"
+  onClick={() => handleDelete(application.id)}
+>
   Delete
 </button>
   </div>
 ))}
     </div>
+    </div>
   );
 }
-
 export default App;
