@@ -25,6 +25,9 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [sortOrder, setSortOrder] = useState("newest");
 
   useEffect(() => {
   fetch("http://localhost:3001/applications")
@@ -50,6 +53,30 @@ if (!confirmed) return;
     applications.filter((application) => application.id !== id)
   );
 };
+const filteredApplications = applications
+  .filter((application) => {
+    const matchesSearch =
+      application.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      application.role.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" || application.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  })
+  .sort((a, b) => {
+    const dateA = a.application_date
+      ? new Date(a.application_date).getTime()
+      : 0;
+
+    const dateB = b.application_date
+      ? new Date(b.application_date).getTime()
+      : 0;
+
+    return sortOrder === "newest"
+      ? dateB - dateA
+      : dateA - dateB;
+  });
   const handleEdit = (application: Application) => {
   setEditingId(application.id);
   setCompany(application.company);
@@ -167,6 +194,43 @@ finally {
   return (
   <div className="app-container">
     <h1>Job Application Tracker</h1>
+    <input
+  className="search-input"
+  type="text"
+  placeholder="Search by company or role..."
+  value={searchTerm}
+  onChange={(event) => setSearchTerm(event.target.value)}
+/>
+<select
+  className="status-filter"
+  value={statusFilter}
+  onChange={(event) => setStatusFilter(event.target.value)}
+>
+  <option value="All">All Statuses</option>
+  <option value="Applied">Applied</option>
+  <option value="Interview">Interview</option>
+  <option value="Offer">Offer</option>
+  <option value="Rejected">Rejected</option>
+</select>
+<select
+  className="sort-select"
+  value={sortOrder}
+  onChange={(event) => setSortOrder(event.target.value)}
+>
+  <option value="newest">Newest first</option>
+  <option value="oldest">Oldest first</option>
+</select>
+<button
+  type="button"
+  className="clear-filters-button"
+  onClick={() => {
+    setSearchTerm("");
+    setStatusFilter("All");
+    setSortOrder("newest");
+  }}
+>
+  Clear Filters
+</button>
       <form className="application-form" onSubmit={handleSubmit}>
         <input
           type="text"
@@ -232,12 +296,21 @@ finally {
 {loadError && (
   <p>Unable to load applications. Please try again.</p>
 )}
-{!isLoading && !loadError && applications.length === 0 && (
+{!isLoading &&
+  !loadError &&
+  searchTerm &&
+  filteredApplications.length === 0 && (
+    <p>No matching applications found.</p>
+  )}
+{!isLoading &&
+  !loadError &&
+  !searchTerm &&
+  applications.length === 0 && (
   <p>No applications yet. Add your first application!</p>
 )}
       <div className="applications-grid">
 
-  {!isLoading && applications.map((application) => (
+{!isLoading && filteredApplications.map((application) => (
 
     <div className="application-card" key={application.id}>
     <h2 className="company-name">{application.company}</h2>
