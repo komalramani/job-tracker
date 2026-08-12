@@ -77,6 +77,31 @@ const filteredApplications = applications
       ? dateB - dateA
       : dateA - dateB;
   });
+  const totalApplications = applications.length;
+
+const appliedCount = applications.filter(
+
+  (application) => application.status === "Applied"
+
+).length;
+
+const interviewCount = applications.filter(
+
+  (application) => application.status === "Interview"
+
+).length;
+
+const offerCount = applications.filter(
+
+  (application) => application.status === "Offer"
+
+).length;
+
+const rejectedCount = applications.filter(
+
+  (application) => application.status === "Rejected"
+
+).length;
   const handleEdit = (application: Application) => {
   setEditingId(application.id);
   setCompany(application.company);
@@ -192,8 +217,33 @@ finally {
 };
 
   return (
-  <div className="app-container">
-    <h1>Job Application Tracker</h1>
+<div className="app-container">
+  <div className="stats-grid">
+  <div className="stat-card total-stat">
+    <span>Total</span>
+    <strong>{totalApplications}</strong>
+  </div>
+
+  <div className="stat-card applied-stat">
+    <span>Applied</span>
+    <strong>{appliedCount}</strong>
+  </div>
+
+  <div className="stat-card interview-stat">
+    <span>Interviews</span>
+    <strong>{interviewCount}</strong>
+  </div>
+
+  <div className="stat-card offer-stat">
+    <span>Offers</span>
+    <strong>{offerCount}</strong>
+  </div>
+
+  <div className="stat-card rejected-stat">
+    <span>Rejected</span>
+    <strong>{rejectedCount}</strong>
+  </div>
+</div>
     <input
   className="search-input"
   type="text"

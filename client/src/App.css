@@ -195,7 +195,25 @@ body {
 .application-card a:hover {
   text-decoration: underline;
 }
+.total-stat {
+  border-top: 4px solid #6b7280;
+}
 
+.applied-stat {
+  border-top: 4px solid #2563eb;
+}
+
+.interview-stat {
+  border-top: 4px solid #f59e0b;
+}
+
+.offer-stat {
+  border-top: 4px solid #16a34a;
+}
+
+.rejected-stat {
+  border-top: 4px solid #dc2626;
+}
 @media (max-width: 700px) {
   .app-container {
     width: min(100% - 24px, 1000px);
@@ -213,6 +231,9 @@ body {
   .application-card {
     min-height: auto;
   }
+  .stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
 }
 .search-input {
   width: 100%;
@@ -256,4 +277,31 @@ body {
 
 .clear-filters-button:hover {
   background: #f3f4f6;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.stat-card span {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 1.5rem;
+  color: #111827;
 }
