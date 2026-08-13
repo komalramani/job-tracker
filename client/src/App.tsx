@@ -330,11 +330,15 @@ finally {
           <option value="Offer">Offer</option>
           <option value="Rejected">Rejected</option>
         </select>
-        <input
-        type="date"
-        value={applicationDate}
-        onChange={(event) => setApplicationDate(event.target.value)}
-        />
+        <div className="form-field">
+  <label htmlFor="application-date">Application Date</label>
+  <input
+    id="application-date"
+    type="date"
+    value={applicationDate}
+    onChange={(event) => setApplicationDate(event.target.value)}
+  />
+</div>
 
         <input
         type="url"
@@ -349,11 +353,15 @@ finally {
         onChange={(event) => setNotes(event.target.value)}
         />
 
-      <input
-      type="date"
-      value={followUpDate}
-      onChange={(event) => setFollowUpDate(event.target.value)}
-      />
+      <div className="form-field">
+  <label htmlFor="follow-up-date">Follow-up Date</label>
+  <input
+    id="follow-up-date"
+    type="date"
+    value={followUpDate}
+    onChange={(event) => setFollowUpDate(event.target.value)}
+  />
+</div>
         <button type="submit" disabled={isSaving}>
   {isSaving
     ? "Saving..."
@@ -420,12 +428,32 @@ finally {
       <p>Notes: {application.notes}</p>
     )}
 
-    {application.follow_up_date && (
-      <p>
-        Follow up:{" "}
-        {new Date(application.follow_up_date).toLocaleDateString()}
-      </p>
-    )}
+    {application.follow_up_date && (() => {
+  const followUpDate = new Date(application.follow_up_date);
+  const today = new Date();
+
+  followUpDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const isOverdue = followUpDate < today;
+  const isDueToday = followUpDate.getTime() === today.getTime();
+
+  return (
+    <p
+      className={
+        isOverdue
+          ? "follow-up overdue"
+          : isDueToday
+          ? "follow-up due-today"
+          : "follow-up upcoming"
+      }
+    >
+      Follow up: {followUpDate.toLocaleDateString()}
+      {isOverdue && " — Overdue"}
+      {isDueToday && " — Due today"}
+    </p>
+  );
+})()}
     <button className="edit-button" onClick={() => handleEdit(application)}>
   Edit
 </button>

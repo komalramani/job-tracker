@@ -317,3 +317,38 @@ body {
   font-size: 1.5rem;
   color: #111827;
 }
+.follow-up {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.follow-up.upcoming {
+  color: #2563eb;
+}
+
+.follow-up.due-today {
+  color: #d97706;
+}
+
+.follow-up.overdue {
+  color: #dc2626;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.form-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: left;
+  padding-left: 2px;
+}
+
+.form-field input {
+  width: 100%;
+  box-sizing: border-box;
+}
