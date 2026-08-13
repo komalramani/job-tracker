@@ -1,4 +1,7 @@
 import "./App.css";
+import ApplicationCard from "./components/ApplicationCard";
+import ApplicationForm from "./components/ApplicationForm";
+import FilterBar from "./components/FilterBar";
 import { useEffect, useState } from "react";
 
 type Application = {
@@ -42,7 +45,7 @@ function App() {
 })
     .finally(() => setIsLoading(false));
 }, []);
-  const handleDelete = async (id: number) => {
+const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this application?");
 if (!confirmed) return;
   await fetch(`http://localhost:3001/applications/${id}`, {
@@ -218,6 +221,10 @@ finally {
 
   return (
 <div className="app-container">
+  <header className="app-header">
+  <h1>Job Application Tracker</h1>
+  <p>Manage applications, track progress, and stay on top of follow-ups.</p>
+</header>
   <div className="stats-grid">
   <div
   className={`stat-card total-stat ${
@@ -269,112 +276,34 @@ finally {
     <strong>{rejectedCount}</strong>
   </div>
 </div>
-    <input
-  className="search-input"
-  type="text"
-  placeholder="Search by company or role..."
-  value={searchTerm}
-  onChange={(event) => setSearchTerm(event.target.value)}
+<FilterBar
+  searchTerm={searchTerm}
+  statusFilter={statusFilter}
+  sortOrder={sortOrder}
+  setSearchTerm={setSearchTerm}
+  setStatusFilter={setStatusFilter}
+  setSortOrder={setSortOrder}
 />
-<select
-  className="status-filter"
-  value={statusFilter}
-  onChange={(event) => setStatusFilter(event.target.value)}
->
-  <option value="All">All Statuses</option>
-  <option value="Applied">Applied</option>
-  <option value="Interview">Interview</option>
-  <option value="Offer">Offer</option>
-  <option value="Rejected">Rejected</option>
-</select>
-<select
-  className="sort-select"
-  value={sortOrder}
-  onChange={(event) => setSortOrder(event.target.value)}
->
-  <option value="newest">Newest first</option>
-  <option value="oldest">Oldest first</option>
-</select>
-<button
-  type="button"
-  className="clear-filters-button"
-  onClick={() => {
-    setSearchTerm("");
-    setStatusFilter("All");
-    setSortOrder("newest");
-  }}
->
-  Clear Filters
-</button>
-      <form className="application-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Company"
-          value={company}
-          onChange={(event) => setCompany(event.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="Role"
-          value={role}
-          onChange={(event) => setRole(event.target.value)}
-        />
-
-        <select
-          value={status}
-          onChange={(event) => setStatus(event.target.value)}
-        >
-          <option value="Applied">Applied</option>
-          <option value="Interview">Interview</option>
-          <option value="Offer">Offer</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-        <div className="form-field">
-  <label htmlFor="application-date">Application Date</label>
-  <input
-    id="application-date"
-    type="date"
-    value={applicationDate}
-    onChange={(event) => setApplicationDate(event.target.value)}
-  />
-</div>
-
-        <input
-        type="url"
-        placeholder="Job Link"
-        value={jobLink}
-        onChange={(event) => setJobLink(event.target.value)}
-        />
-
-        <textarea
-        placeholder="Notes"
-        value={notes}
-        onChange={(event) => setNotes(event.target.value)}
-        />
-
-      <div className="form-field">
-  <label htmlFor="follow-up-date">Follow-up Date</label>
-  <input
-    id="follow-up-date"
-    type="date"
-    value={followUpDate}
-    onChange={(event) => setFollowUpDate(event.target.value)}
-  />
-</div>
-        <button type="submit" disabled={isSaving}>
-  {isSaving
-    ? "Saving..."
-    : editingId
-    ? "Update Application"
-    : "Add Application"}
-</button>
-{editingId && (
-  <button type="button" onClick={handleCancelEdit}>
-    Cancel
-  </button>
-)}
-      </form>
+  <ApplicationForm
+  company={company}
+  role={role}
+  status={status}
+  applicationDate={applicationDate}
+  jobLink={jobLink}
+  notes={notes}
+  followUpDate={followUpDate}
+  editingId={editingId}
+  isSaving={isSaving}
+  setCompany={setCompany}
+  setRole={setRole}
+  setStatus={setStatus}
+  setApplicationDate={setApplicationDate}
+  setJobLink={setJobLink}
+  setNotes={setNotes}
+  setFollowUpDate={setFollowUpDate}
+  handleSubmit={handleSubmit}
+  handleCancelEdit={handleCancelEdit}
+/>
 {isLoading && <p>Loading applications...</p>}
 {loadError && (
   <p>Unable to load applications. Please try again.</p>
@@ -391,80 +320,22 @@ finally {
   applications.length === 0 && (
   <p>No applications yet. Add your first application!</p>
 )}
-      <div className="applications-grid">
+  <div className="applications-grid">
 
 {!isLoading && filteredApplications.map((application) => (
+  
+       <ApplicationCard
 
-    <div className="application-card" key={application.id}>
-    <h2 className="company-name">{application.company}</h2>
-    <p className="role-name">{application.role}</p>
+        key={application.id}
 
-    <p>
-  <span className={`status-badge status-${application.status.toLowerCase()}`}>
-    {application.status}
-  </span>
-</p>
+        application={application}
 
-    {application.application_date && (
-      <p>
-        Applied on:{" "}
-        {new Date(application.application_date).toLocaleDateString()}
-      </p>
-    )}
+        handleEdit={handleEdit}
 
-    {application.job_link && (
-      <p>
-        <a
-          href={application.job_link}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View Job Posting
-        </a>
-      </p>
-    )}
+        handleDelete={handleDelete}
 
-    {application.notes && (
-      <p>Notes: {application.notes}</p>
-    )}
+      />
 
-    {application.follow_up_date && (() => {
-  const followUpDate = new Date(application.follow_up_date);
-  const today = new Date();
-
-  followUpDate.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  const isOverdue = followUpDate < today;
-  const isDueToday = followUpDate.getTime() === today.getTime();
-
-  return (
-    <p
-      className={
-        isOverdue
-          ? "follow-up overdue"
-          : isDueToday
-          ? "follow-up due-today"
-          : "follow-up upcoming"
-      }
-    >
-      Follow up: {followUpDate.toLocaleDateString()}
-      {isOverdue && " — Overdue"}
-      {isDueToday && " — Due today"}
-    </p>
-  );
-})()}
-    <button className="edit-button" onClick={() => handleEdit(application)}>
-  Edit
-</button>
-
-<button
-  className="delete-button"
-  onClick={() => handleDelete(application.id)}
->
-  Delete
-</button>
-  </div>
 ))}
     </div>
     </div>

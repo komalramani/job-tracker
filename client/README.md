@@ -1,32 +1,156 @@
-# React + TypeScript + Vite
+# Job Application Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A full-stack web application for managing and tracking job applications throughout the hiring process.
 
-Currently, two official plugins are available:
+The application allows users to record job opportunities, update application progress, manage follow-up dates, and quickly review the overall status of their job search through an interactive dashboard.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Add, edit, and delete job applications
+- Track application status: Applied, Interview, Offer, and Rejected
+- View application statistics through an interactive dashboard
+- Click dashboard statistics to filter applications by status
+- Search applications by company or role
+- Filter applications by status
+- Sort applications by application date
+- Store job posting links and notes
+- Track application and follow-up dates
+- Highlight overdue and due-today follow-ups
+- Clear active search, filter, and sorting selections
+- Validate required form fields
+- Display loading and error states
+- Persist application data using PostgreSQL
+- Responsive user interface
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+### Frontend
+- React
+- TypeScript
+- Vite
+- CSS
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### Backend
+- Node.js
+- Express.js
+- REST API
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+### Database
+- PostgreSQL
+
+### Development Tools
+- Git
+- GitHub
+- VS Code
+
+## Architecture
+
+The application follows a full-stack architecture:
+
+**React + TypeScript frontend → Express REST API → PostgreSQL database**
+
+The React frontend manages the user interface, form state, filtering, sorting, and interactions. The Express backend exposes REST API endpoints for application data, while PostgreSQL provides persistent data storage.
+
+## Key Functionality
+
+The application supports full CRUD operations:
+
+- **Create** new job applications
+- **Read** stored applications from PostgreSQL
+- **Update** existing application details and status
+- **Delete** applications that are no longer needed
+
+The interface also provides derived statistics, search, filtering, sorting, follow-up tracking, loading states, and error handling.
+
+## What I Learned
+
+Building this project gave me practical experience connecting the frontend, backend, and database layers of a full-stack application.
+
+Key areas I worked with include:
+
+- React state management and controlled forms
+- TypeScript in a React application
+- CRUD operations
+- REST API integration
+- Asynchronous API requests using `fetch`
+- Express routing
+- PostgreSQL database integration
+- Search, filtering, and sorting
+- Derived dashboard statistics
+- Date-based follow-up logic
+- Loading and error states
+- Form validation
+- Responsive UI development
+- Git and GitHub workflow
+
+## Running Locally
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Node.js
+- npm
+- PostgreSQL
+
+A PostgreSQL database must also be configured for the backend before running the application.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/komalramani/job-tracker.git
+cd job-tracker
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### 2. Install frontend dependencies
+
+```bash
+cd client
+npm install
+```
+
+### 3. Install backend dependencies
+
+```bash
+cd ../server
+npm install
+```
+
+### 4. Configure PostgreSQL
+
+Create the PostgreSQL database and application table required by the backend, and update the database connection settings in the server configuration as needed.
+
+### 5. Start the backend
+
+From the `server` directory:
+
+```bash
+node index.js
+```
+
+The API runs locally on:
+
+```text
+http://localhost:3001
+```
+
+### 6. Start the frontend
+
+Open another terminal:
+
+```bash
+cd client
+npm run dev
+```
+
+Open the local URL displayed by Vite in your browser.
+
+## Screenshots
+
+Screenshots of the completed application will be added after final UI and deployment checks.
+
+## Project Status
+
+Core application development is complete.
+
+Current finalization work includes deployment, documentation polish, and final portfolio presentation.

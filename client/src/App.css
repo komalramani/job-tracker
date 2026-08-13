@@ -1,3 +1,20 @@
+.app-header {
+  margin-bottom: 28px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.app-header p {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
 body {
   margin: 0;
   background: #f4f6f8;
@@ -351,4 +368,10 @@ body {
 .form-field input {
   width: 100%;
   box-sizing: border-box;
+}
+.form-title {
+  margin: 0 0 18px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
 }
