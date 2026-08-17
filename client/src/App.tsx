@@ -4,6 +4,10 @@ import ApplicationForm from "./components/ApplicationForm";
 import FilterBar from "./components/FilterBar";
 import { useEffect, useState } from "react";
 import StatsDashboard from "./components/StatsDashboard";
+import {
+  getApplications,
+  saveApplication,
+} from "./services/applicationService";
 
 type Application = {
   id: number;
@@ -34,17 +38,13 @@ function App() {
   const [sortOrder, setSortOrder] = useState("newest");
 
   useEffect(() => {
-  fetch("http://localhost:3001/applications")
-    .then((response) => response.json())
-    .then((data) => setApplications(data))
-    .catch((error) => {
-
-  console.error("Error:", error);
-
-  setLoadError(true);
-
-})
-    .finally(() => setIsLoading(false));
+  getApplications()
+  .then((data) => setApplications(data))
+  .catch((error) => {
+    console.error("Error:", error);
+    setLoadError(true);
+  })
+  .finally(() => setIsLoading(false));
 }, []);
 const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this application?");
@@ -140,51 +140,18 @@ const handleCancelEdit = () => {
   setIsSaving(true);
   try {
 
-    const url = editingId
-
-      ? `http://localhost:3001/applications/${editingId}`
-
-      : "http://localhost:3001/applications";
-
-    const method = editingId ? "PUT" : "POST";
-
-    const response = await fetch(url, {
-
-      method,
-
-      headers: {
-
-        "Content-Type": "application/json",
-
-      },
-
-      body: JSON.stringify({
-
-        company,
-
-        role,
-
-        status,
-
-        application_date: applicationDate,
-
-        job_link: jobLink,
-
-        notes,
-
-        follow_up_date: followUpDate,
-
-      }),
-
-    });
-
-    if (!response.ok) {
-
-      throw new Error("Failed to save application");
-
-    }
-
-    const newApplication = await response.json();
+    const newApplication = await saveApplication(
+  {
+    company,
+    role,
+    status,
+    application_date: applicationDate || null,
+    job_link: jobLink || null,
+    notes: notes || null,
+    follow_up_date: followUpDate || null,
+  },
+  editingId
+);
 
     if (editingId) {
   setApplications(

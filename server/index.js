@@ -26,6 +26,26 @@ app.get("/applications", async (req, res) => {
   }
 });
 
+// GET status history for one application
+app.get("/applications/:id/history", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT id, application_id, status, changed_at
+       FROM application_history
+       WHERE application_id = $1
+       ORDER BY changed_at ASC`,
+      [id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch application history" });
+  }
+});
+
 // POST to PostgreSQL
 app.post("/applications", async (req, res) => {
   try {
@@ -61,8 +81,14 @@ app.post("/applications", async (req, res) => {
     follow_up_date || null,
   ]
 );
+    const newApplication = result.rows[0];
 
-    res.status(201).json(result.rows[0]);
+await pool.query(
+  `INSERT INTO application_history (application_id, status)
+   VALUES ($1, $2)`,
+  [newApplication.id, newApplication.status]
+);
+    res.status(201).json(newApplication);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Database error" });
@@ -71,7 +97,19 @@ app.post("/applications", async (req, res) => {
 // UPDATE application
 app.put("/applications/:id", async (req, res) => {
   try {
+
     const { id } = req.params;
+    const currentResult = await pool.query(
+  "SELECT status FROM applications WHERE id = $1",
+  [id]
+);
+
+if (currentResult.rows.length === 0) {
+  return res.status(404).json({ error: "Application not found" });
+}
+
+const currentStatus = currentResult.rows[0].status;
+
 
     const {
       company,
@@ -105,6 +143,13 @@ app.put("/applications/:id", async (req, res) => {
         id,
       ]
     );
+    if (currentStatus !== status) {
+  await pool.query(
+    `INSERT INTO application_history (application_id, status)
+     VALUES ($1, $2)`,
+    [id, status]
+  );
+}
 
     res.json(result.rows[0]);
   } catch (error) {
