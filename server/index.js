@@ -48,68 +48,12 @@ app.get("/applications/:id/history", async (req, res) => {
 
 // POST to PostgreSQL
 app.post("/applications", async (req, res) => {
+  let client;
+
   try {
-    const {
-  company,
-  role,
-  status,
-  application_date,
-  job_link,
-  notes,
-  follow_up_date,
-} = req.body;
+    client = await pool.connect();
 
-    const result = await pool.query(
-  `INSERT INTO applications (
-    company,
-    role,
-    status,
-    application_date,
-    job_link,
-    notes,
-    follow_up_date
-  )
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
-  RETURNING *`,
-  [
-    company,
-    role,
-    status,
-    application_date || null,
-    job_link || null,
-    notes || null,
-    follow_up_date || null,
-  ]
-);
-    const newApplication = result.rows[0];
-
-await pool.query(
-  `INSERT INTO application_history (application_id, status)
-   VALUES ($1, $2)`,
-  [newApplication.id, newApplication.status]
-);
-    res.status(201).json(newApplication);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-// UPDATE application
-app.put("/applications/:id", async (req, res) => {
-  try {
-
-    const { id } = req.params;
-    const currentResult = await pool.query(
-  "SELECT status FROM applications WHERE id = $1",
-  [id]
-);
-
-if (currentResult.rows.length === 0) {
-  return res.status(404).json({ error: "Application not found" });
-}
-
-const currentStatus = currentResult.rows[0].status;
-
+    await client.query("BEGIN");
 
     const {
       company,
@@ -121,7 +65,91 @@ const currentStatus = currentResult.rows[0].status;
       follow_up_date,
     } = req.body;
 
-    const result = await pool.query(
+    const result = await client.query(
+      `INSERT INTO applications (
+        company,
+        role,
+        status,
+        application_date,
+        job_link,
+        notes,
+        follow_up_date
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *`,
+      [
+        company,
+        role,
+        status,
+        application_date || null,
+        job_link || null,
+        notes || null,
+        follow_up_date || null,
+      ]
+    );
+
+    const newApplication = result.rows[0];
+
+    await client.query(
+      `INSERT INTO application_history (application_id, status)
+       VALUES ($1, $2)`,
+      [newApplication.id, newApplication.status]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(201).json(newApplication);
+  } catch (error) {
+    if (client) {
+      await client.query("ROLLBACK");
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+});
+
+// UPDATE application
+app.put("/applications/:id", async (req, res) => {
+  let client;
+
+  try {
+    client = await pool.connect();
+
+    // Start transaction
+    await client.query("BEGIN");
+
+    const { id } = req.params;
+
+    // Get current status before updating
+    const currentResult = await client.query(
+      "SELECT status FROM applications WHERE id = $1",
+      [id]
+    );
+
+    if (currentResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    const currentStatus = currentResult.rows[0].status;
+
+    const {
+      company,
+      role,
+      status,
+      application_date,
+      job_link,
+      notes,
+      follow_up_date,
+    } = req.body;
+
+    // Update application
+    const result = await client.query(
       `UPDATE applications
        SET company = $1,
            role = $2,
@@ -143,20 +171,36 @@ const currentStatus = currentResult.rows[0].status;
         id,
       ]
     );
+
+    // Record history only when status actually changes
     if (currentStatus !== status) {
-  await pool.query(
-    `INSERT INTO application_history (application_id, status)
-     VALUES ($1, $2)`,
-    [id, status]
-  );
-}
+      await client.query(
+        `INSERT INTO application_history (application_id, status)
+         VALUES ($1, $2)`,
+        [id, status]
+      );
+    }
+
+    // Everything succeeded
+    await client.query("COMMIT");
 
     res.json(result.rows[0]);
   } catch (error) {
+    // Undo everything if any database operation fails
+    if (client) {
+      await client.query("ROLLBACK");
+    }
+
     console.error(error);
     res.status(500).json({ error: "Database error" });
+  } finally {
+    // Return the database connection to the pool
+    if (client) {
+      client.release();
+    }
   }
 });
+
 // DELETE application
 app.delete("/applications/:id", async (req, res) => {
   try {
