@@ -48,11 +48,7 @@ return (
 <button
   type="button"
   className="clear-filters-button"
-  onClick={() => {
-    setSearchTerm("");
-    setStatusFilter("All");
-    setSortOrder("newest");
-  }}
+  onClick={handleClearFilters}
 >
   Clear Filters
 </button>

@@ -218,7 +218,11 @@ finally {
 }
 
 };
-
+  const handleClearFilters = () => {
+  setSearchTerm("");
+  setStatusFilter("All");
+  setSortOrder("newest");
+};
   return (
 <div className="app-container">
   <header className="app-header">
@@ -283,6 +287,7 @@ finally {
   setSearchTerm={setSearchTerm}
   setStatusFilter={setStatusFilter}
   setSortOrder={setSortOrder}
+  handleClearFilters={handleClearFilters}
 />
   <ApplicationForm
   company={company}
