@@ -4,7 +4,7 @@ const express = require("express");
 const pool = require("./db");
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
   "http://localhost:5173",
