@@ -7,6 +7,7 @@ import StatsDashboard from "./components/StatsDashboard";
 import {
   getApplications,
   saveApplication,
+  deleteApplication,
 } from "./services/applicationService";
 
 type Application = {
@@ -49,9 +50,7 @@ function App() {
 const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this application?");
 if (!confirmed) return;
-  await fetch(`http://localhost:3001/applications/${id}`, {
-    method: "DELETE",
-  });
+  await deleteApplication(id);
 
   setApplications(
     applications.filter((application) => application.id !== id)

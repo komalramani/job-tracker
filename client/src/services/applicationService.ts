@@ -1,6 +1,9 @@
 import type { Application } from "../types/application";
 import type { ApplicationHistory } from "../types/applicationHistory";
-const API_URL = "http://localhost:3001/applications";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+
+const API_URL = `${API_BASE_URL}/applications`;
 
 export async function getApplications(): Promise<Application[]> {
   const response = await fetch(API_URL);
@@ -45,4 +48,13 @@ export async function getApplicationHistory(
   }
 
   return response.json();
+}
+export async function deleteApplication(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete application");
+  }
 }
