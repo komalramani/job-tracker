@@ -31,18 +31,37 @@ app.get("/applications/:id/history", async (req, res) => {
   try {
     const { id } = req.params;
 
+    const applicationId = Number(id);
+
+    if (!Number.isInteger(applicationId) || applicationId <= 0) {
+      return res.status(400).json({
+        error: "Invalid application ID",
+      });
+    }
+    const applicationResult = await pool.query(
+  "SELECT id FROM applications WHERE id = $1",
+  [applicationId]
+);
+
+if (applicationResult.rows.length === 0) {
+  return res.status(404).json({
+    error: "Application not found",
+  });
+}
     const result = await pool.query(
       `SELECT id, application_id, status, changed_at
        FROM application_history
        WHERE application_id = $1
        ORDER BY changed_at ASC`,
-      [id]
+      [applicationId]
     );
 
     res.json(result.rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch application history" });
+    res.status(500).json({
+      error: "Failed to fetch application history",
+    });
   }
 });
 
@@ -64,7 +83,38 @@ app.post("/applications", async (req, res) => {
       notes,
       follow_up_date,
     } = req.body;
+    if (!company?.trim() || !role?.trim()) {
+  await client.query("ROLLBACK");
 
+  return res.status(400).json({
+    error: "Company and role are required",
+  });
+}
+  const allowedStatuses = [
+  "Applied",
+  "Interview",
+  "Offer",
+  "Rejected",
+];
+
+if (!allowedStatuses.includes(status)) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Invalid application status",
+  });
+}
+if (
+  application_date &&
+  follow_up_date &&
+  new Date(follow_up_date) < new Date(application_date)
+) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Follow-up date cannot be earlier than application date",
+  });
+}
     const result = await client.query(
       `INSERT INTO applications (
         company,
@@ -124,11 +174,19 @@ app.put("/applications/:id", async (req, res) => {
     await client.query("BEGIN");
 
     const { id } = req.params;
+    const applicationId = Number(id);
 
+if (!Number.isInteger(applicationId) || applicationId <= 0) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Invalid application ID",
+  });
+}
     // Get current status before updating
     const currentResult = await client.query(
       "SELECT status FROM applications WHERE id = $1",
-      [id]
+      [applicationId]
     );
 
     if (currentResult.rows.length === 0) {
@@ -148,6 +206,38 @@ app.put("/applications/:id", async (req, res) => {
       follow_up_date,
     } = req.body;
 
+    if (!company?.trim() || !role?.trim()) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Company and role are required",
+  });
+}
+if (
+  application_date &&
+  follow_up_date &&
+  new Date(follow_up_date) < new Date(application_date)
+) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Follow-up date cannot be earlier than application date",
+  });
+}
+const allowedStatuses = [
+  "Applied",
+  "Interview",
+  "Offer",
+  "Rejected",
+];
+
+if (!allowedStatuses.includes(status)) {
+  await client.query("ROLLBACK");
+
+  return res.status(400).json({
+    error: "Invalid application status",
+  });
+}
     // Update application
     const result = await client.query(
       `UPDATE applications
@@ -168,7 +258,7 @@ app.put("/applications/:id", async (req, res) => {
         job_link || null,
         notes || null,
         follow_up_date || null,
-        id,
+        applicationId,
       ]
     );
 
@@ -177,7 +267,7 @@ app.put("/applications/:id", async (req, res) => {
       await client.query(
         `INSERT INTO application_history (application_id, status)
          VALUES ($1, $2)`,
-        [id, status]
+        [applicationId, status]
       );
     }
 
@@ -205,18 +295,34 @@ app.put("/applications/:id", async (req, res) => {
 app.delete("/applications/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const applicationId = Number(id);
 
+if (!Number.isInteger(applicationId) || applicationId <= 0) {
+  return res.status(400).json({
+    error: "Invalid application ID",
+  });
+}
     const result = await pool.query(
-      "DELETE FROM applications WHERE id = $1 RETURNING *",
-      [id]
-    );
-
+  `DELETE FROM applications
+   WHERE id = $1
+   RETURNING *`,
+  [applicationId]
+);
+  if (result.rows.length === 0) {
+  return res.status(404).json({
+    error: "Application not found",
+  });
+}
     res.json(result.rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Database error" });
   }
 });
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
