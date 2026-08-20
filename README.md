@@ -14,7 +14,15 @@ https://job-tracker-2pm2.onrender.com
 
 > The backend is hosted on Render's free tier and may take several seconds to wake after inactivity.
 
----
+## Screenshots
+
+### Dashboard
+
+![Job Application Tracker Dashboard](docs/dashboard.png)
+
+### Application History
+
+![Application History](docs/application-history.png)
 
 ## Features
 
