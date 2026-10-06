@@ -441,3 +441,61 @@ body {
   color: #6b7280;
   font-size: 0.9rem;
 }
+.match-checker {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  text-align: left;
+}
+
+.match-checker h2 {
+  margin: 0 0 4px;
+}
+
+.match-checker p {
+  margin: 0 0 16px;
+  color: #6b7280;
+}
+
+.match-checker textarea {
+  display: block;
+  width: 100%;
+  min-height: 140px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.match-checker button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.match-checker button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.match-error {
+  margin-top: 12px;
+  color: #b91c1c;
+}
+
+.match-result {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
