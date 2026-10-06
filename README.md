@@ -80,7 +80,7 @@ https://job-tracker-2pm2.onrender.com
 
 - Render Static Site
 - Render Web Service
-- Render PostgreSQL
+- Neon PostgreSQL
 
 ### Development Tools
 
@@ -117,7 +117,7 @@ Render Static Site
 Render Node Web Service
         |
         v
-Render PostgreSQL
+Neon PostgreSQL
 ```
 
 The React frontend manages the user interface, form state, filtering, sorting, and interactions.
@@ -402,7 +402,7 @@ The Express API is deployed as a Render Node.js Web Service.
 
 ### Database
 
-Application data is persisted in a production PostgreSQL database.
+Application data is persisted in a production PostgreSQL database hosted on Neon.
 
 Production configuration includes:
 
