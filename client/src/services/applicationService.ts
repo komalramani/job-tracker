@@ -1,5 +1,6 @@
 import type { Application } from "../types/application";
 import type { ApplicationHistory } from "../types/applicationHistory";
+import type { MatchResult } from "../types/matchResult";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
@@ -57,4 +58,28 @@ export async function deleteApplication(id: number): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to delete application");
   }
+}
+const MATCH_API_URL =
+  import.meta.env.VITE_MATCH_API_URL || "http://127.0.0.1:8000";
+
+export async function checkMatch(
+  resumeText: string,
+  jobDescription: string
+): Promise<MatchResult> {
+  const response = await fetch(`${MATCH_API_URL}/match`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      resume_text: resumeText,
+      job_description: jobDescription,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to check match");
+  }
+
+  return response.json();
 }

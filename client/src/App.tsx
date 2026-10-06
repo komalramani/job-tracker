@@ -4,6 +4,7 @@ import ApplicationForm from "./components/ApplicationForm";
 import FilterBar from "./components/FilterBar";
 import { useEffect, useState } from "react";
 import StatsDashboard from "./components/StatsDashboard";
+import MatchChecker from "./components/MatchChecker";
 import {
   getApplications,
   saveApplication,
@@ -196,6 +197,7 @@ finally {
   <h1>Job Application Tracker</h1>
   <p>Manage applications, track progress, and stay on top of follow-ups.</p>
 </header>
+  <MatchChecker />
   <StatsDashboard
   totalApplications={totalApplications}
   appliedCount={appliedCount}
